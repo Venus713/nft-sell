@@ -1,4 +1,4 @@
-# create-your-own-NFT-and-sell-it
+# Create-Sell-NFT
 
 ## Prerequisities
 
@@ -49,14 +49,14 @@ Now we need to install two things `ganache-cli` and `eth-brownie`. You can do th
 
 For the code, let's make use of some excellent boilerplate code provided an NFT Brownie Mix repo. Use this command to clone all of the files into your current directory:
 
-    git clone https://github.com/PatrickAlphaC/nft-mix .
+    git clone https://github.com/Venus713/nft-sell.git
 
 Finally we need to create some environment variables, go to the `.env` file in your directory and update the following variables
 
-```
-export PRIVATE_KEY=<enter private key>
-export WEB3_INFURA_PROJECT_ID=<enter Infura Project ID>
-```
+    ```bash
+    export PRIVATE_KEY=<enter private key>
+    export WEB3_INFURA_PROJECT_ID=<enter Infura Project ID>
+    ```
 
 - The private key can be found by accessing your MetaMask account, clicking on the 3 dots to bring up your account details and finally by clicking `Export Private Key`
 - The WEB3_INFURA_PROJECT_ID can be accessed by creating a free Infura account. This account will give us a way to send transactions to the blockchain.
@@ -70,7 +70,7 @@ As for the other environment variables in this file, keep them commented for now
 
 ---
 
-## Create our first contract and deploy!
+## Create our first contract and deploy
 
 Now we're ready to run our code to deploy our NFT contract to the Rinkeby blockchain and create our first collectible! We will be deploying it on a platform called `OpenSea`. To do this, source the environment variables by running `source .env` within the root of your project. Now let's create a simple NFT contract on the Rinkeby blockchain by running:
 
@@ -86,28 +86,28 @@ And then let's create our first collectible by running:
 
 To take a look at the contract that we just deployed, open up the file at this location `contracts/SimpleCollectible.sol`, which is a `solidity` file. It should look something like this:
 
-```
-// SPDX-License-Identifier: MIT
-pragma solidity 0.6.6;
+    ```s
+    // SPDX-License-Identifier: MIT
+    pragma solidity 0.6.6;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+    import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract SimpleCollectible is ERC721 {
-    uint256 public tokenCounter;
-    constructor () public ERC721 ("Dogie", "DOG"){
-        tokenCounter = 0;
+    contract SimpleCollectible is ERC721 {
+        uint256 public tokenCounter;
+        constructor () public ERC721 ("Dogie", "DOG"){
+            tokenCounter = 0;
+        }
+
+        function createCollectible(string memory tokenURI) public returns (uint256) {
+            uint256 newItemId = tokenCounter;
+            _safeMint(msg.sender, newItemId);
+            _setTokenURI(newItemId, tokenURI);
+            tokenCounter = tokenCounter + 1;
+            return newItemId;
+        }
+
     }
-
-    function createCollectible(string memory tokenURI) public returns (uint256) {
-        uint256 newItemId = tokenCounter;
-        _safeMint(msg.sender, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-        tokenCounter = tokenCounter + 1;
-        return newItemId;
-    }
-
-}
-```
+    ```
 
 You can see that first we are importing a package for our ERC721 token from OpenZeppelin. ERC721 is a token standard for non-fungible tokens which states that even though someone may be able to make a copy of this token, there will always be only one of this token. On the other hand, fungible tokens follow a different standard such as ERC20s making them replaceable or interchangeable.
 
@@ -119,19 +119,19 @@ After the constructor, we have our function that created the collectible. This i
 
 Finally, we called `setTokenURI`, the `tokenURI` for an NFT is a unique identifier of what the token looks like. The URI could be an API call over HTTPS, an IPFS hash or anything else unique. If you look in our `create_collectible.py` script, we define the `sample_token_uri` as a HTTPS resource. If you open this up in a web browser, you'll see this:
 
-```
-{
-    "name": "PUG",
-    "description": "An adorable PUG pup!",
-    "image": "https://ipfs.io/ipfs/QmSsYRx3LpDAb1GZQm7zZ1AuHZjfbPkD6J7s9r41xu1mf8?filename=pug.png",
-    "attributes": [
-        {
-            "trait_type": "cuteness",
-            "value": 100
-        }
-    ]
-}
-```
+    ```
+    {
+        "name": "PUG",
+        "description": "An adorable PUG pup!",
+        "image": "https://ipfs.io/ipfs/QmSsYRx3LpDAb1GZQm7zZ1AuHZjfbPkD6J7s9r41xu1mf8?filename=pug.png",
+        "attributes": [
+            {
+                "trait_type": "cuteness",
+                "value": 100
+            }
+        ]
+    }
+    ```
 
 This is all of the metadata that was used to build our collectible! It tells us what the NFT looks, its image, its attributes, its name and a description. This metadata follows a particular standard, reflected by the above JSON, which makes it easy for platforms such as OpenSea, Rarible, Mintable etc... to render NFT's because they all follow this standard!
 
@@ -180,77 +180,77 @@ And there we have it! Our advanced collectible should now be deploying to OpenSe
 
 But what exactly did we do here, well let's look at the `AdvancedCollectible.sol` code and take a look:
 
-```
-pragma solidity 0.6.6;
+    ```s
+    pragma solidity 0.6.6;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
+    import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+    import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 
-contract AdvancedCollectible is ERC721, VRFConsumerBase {
-    uint256 public tokenCounter;
-    enum Breed{PUG, SHIBA_INU, ST_BERNARD}
-    // add other things
-    mapping(bytes32 => address) public requestIdToSender;
-    mapping(bytes32 => string) public requestIdToTokenURI;
-    mapping(uint256 => Breed) public tokenIdToBreed;
-    mapping(bytes32 => uint256) public requestIdToTokenId;
-    event requestedCollectible(bytes32 indexed requestId);
+    contract AdvancedCollectible is ERC721, VRFConsumerBase {
+        uint256 public tokenCounter;
+        enum Breed{PUG, SHIBA_INU, ST_BERNARD}
+        // add other things
+        mapping(bytes32 => address) public requestIdToSender;
+        mapping(bytes32 => string) public requestIdToTokenURI;
+        mapping(uint256 => Breed) public tokenIdToBreed;
+        mapping(bytes32 => uint256) public requestIdToTokenId;
+        event requestedCollectible(bytes32 indexed requestId);
 
 
-    bytes32 internal keyHash;
-    uint256 internal fee;
+        bytes32 internal keyHash;
+        uint256 internal fee;
 
-    constructor(address _VRFCoordinator, address _LinkToken, bytes32 _keyhash)
-    public
-    VRFConsumerBase(_VRFCoordinator, _LinkToken)
-    ERC721("Dogie", "DOG")
-    {
-        tokenCounter = 0;
-        keyHash = _keyhash;
-        fee = 0.1 * 10 ** 18;
+        constructor(address _VRFCoordinator, address _LinkToken, bytes32 _keyhash)
+        public
+        VRFConsumerBase(_VRFCoordinator, _LinkToken)
+        ERC721("Dogie", "DOG")
+        {
+            tokenCounter = 0;
+            keyHash = _keyhash;
+            fee = 0.1 * 10 ** 18;
+        }
+
+        function createCollectible(string memory tokenURI, uint256 userProvidedSeed)
+            public returns (bytes32){
+                bytes32 requestId = requestRandomness(keyHash, fee, userProvidedSeed);
+                requestIdToSender[requestId] = msg.sender;
+                requestIdToTokenURI[requestId] = tokenURI;
+                emit requestedCollectible(requestId);
+        }
+
+        function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
+            address dogOwner = requestIdToSender[requestId];
+            string memory tokenURI = requestIdToTokenURI[requestId];
+            uint256 newItemId = tokenCounter;
+            _safeMint(dogOwner, newItemId);
+            _setTokenURI(newItemId, tokenURI);
+            Breed breed = Breed(randomNumber % 3);
+            tokenIdToBreed[newItemId] = breed;
+            requestIdToTokenId[requestId] = newItemId;
+            tokenCounter = tokenCounter + 1;
+        }
+
+        function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
+            require(
+                _isApprovedOrOwner(_msgSender(), tokenId),
+                "ERC721: transfer caller is not owner nor approved"
+            );
+            _setTokenURI(tokenId, _tokenURI);
+        }
     }
-
-    function createCollectible(string memory tokenURI, uint256 userProvidedSeed)
-        public returns (bytes32){
-            bytes32 requestId = requestRandomness(keyHash, fee, userProvidedSeed);
-            requestIdToSender[requestId] = msg.sender;
-            requestIdToTokenURI[requestId] = tokenURI;
-            emit requestedCollectible(requestId);
-    }
-
-    function fulfillRandomness(bytes32 requestId, uint256 randomNumber) internal override {
-        address dogOwner = requestIdToSender[requestId];
-        string memory tokenURI = requestIdToTokenURI[requestId];
-        uint256 newItemId = tokenCounter;
-        _safeMint(dogOwner, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-        Breed breed = Breed(randomNumber % 3);
-        tokenIdToBreed[newItemId] = breed;
-        requestIdToTokenId[requestId] = newItemId;
-        tokenCounter = tokenCounter + 1;
-    }
-
-    function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
-        require(
-            _isApprovedOrOwner(_msgSender(), tokenId),
-            "ERC721: transfer caller is not owner nor approved"
-        );
-        _setTokenURI(tokenId, _tokenURI);
-    }
-}
-```
+    ```
 
 As said before, we used `Chainlink VRF` to select a random breed of dog from PUG, SHIBA_INU or BERNARD using `requestRandomness`. The Chainlink node responds by calling the `fulfillRandomness` function and creates the collectible. Finally, we call our `setTokenURI` to give our NFT it's appearance.
 
 If you take a look inside `scripts/advanced_collectible/create_metadata.py` you can see that opur token URI is already defined for us for each breed of dog:
 
-```
-breed_to_image_uri = {
-    "PUG": "https://ipfs.io/ipfs/QmSsYRx3LpDAb1GZQm7zZ1AuHZjfbPkD6J7s9r41xu1mf8?filename=pug.png",
-    "SHIBA_INU": "https://ipfs.io/ipfs/QmYx6GsYAKnNzZ9A6NvEKV9nf1VaDzJrqDR23Y8YSkebLU?filename=shiba-inu.png",
-    "ST_BERNARD": "https://ipfs.io/ipfs/QmUPjADFGEKmfohdTaNcWhp7VGk26h5jXDA7v3VtTnTLcW?filename=st-bernard.png",
-}
-```
+    ```python
+    breed_to_image_uri = {
+        "PUG": "https://ipfs.io/ipfs/QmSsYRx3LpDAb1GZQm7zZ1AuHZjfbPkD6J7s9r41xu1mf8?filename=pug.png",
+        "SHIBA_INU": "https://ipfs.io/ipfs/QmYx6GsYAKnNzZ9A6NvEKV9nf1VaDzJrqDR23Y8YSkebLU?filename=shiba-inu.png",
+        "ST_BERNARD": "https://ipfs.io/ipfs/QmUPjADFGEKmfohdTaNcWhp7VGk26h5jXDA7v3VtTnTLcW?filename=st-bernard.png",
+    }
+    ```
 
 In this advanced example we didn't really get much control over the image we use or the token URI file containing our metadata. However, if we wanted to do this ourselves for complete customisation, we can do this too. We can do this by using `IPFS`, which is a free decentralised platform that will allow us to store:
 
